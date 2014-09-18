@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="594" height="336" backgroundColor="#FFFFFF" creationComplete="giveFocus(event)" close="askWndw_close(event);">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		.myButtonClose { 
+			skinClass:ClassReference("skins.SmallerButton"); 
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import mx.charts.ChartItem;
+			import mx.charts.HitData;
+			import mx.charts.chartClasses.IAxis;
+			import mx.charts.series.BarSeries;
+			import mx.charts.series.items.BarSeriesItem;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.controls.Alert;
+			import spark.components.TextArea;
+			
+			import events.CustomEvent;
+			
+			public function askWndw_close(evt:CloseEvent):void {
+				PopUpManager.removePopUp(evt.currentTarget as IFlexDisplayObject);
+			}
+			
+			// on initialize, give TextInput focus
+			protected function giveFocus(ev:FlexEvent):void 
+			{
+				try {
+					askText.focusEnabled = true;
+					askText.enabled = true;
+					askText.setFocus();
+				}
+				catch(err:Error) {}
+				
+			}
+	
+		]]>
+	</fx:Script>
+	<s:Button id="submitBtn" y="250" width="143" height="30" label="Submit Question"
+			  click="dispatchEvent(new CustomEvent(CustomEvent.ON_SUBMIT_POP))" horizontalCenter="-92" styleName="myButtonClose"/>
+	<s:Button id="cancelBtn" y="250" width="143" height="30" label="Cancel "
+			  click="dispatchEvent(new CustomEvent(CustomEvent.ON_CANCEL_POP))" horizontalCenter="59" styleName="myButtonClose"/>
+	<s:TextArea id="askText" x="34" y="63" width="531" height="102" fontSize="16" color="0x000000" contentBackgroundColor="0xffffff"    />
+	<s:Label x="34" y="27" width="531" color="#B2B2B2" fontSize="26" fontWeight="bold"
+			 text="Ask a Question"/>
+</s:TitleWindow>

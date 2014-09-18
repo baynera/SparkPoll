@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+    ADOBE SYSTEMS INCORPORATED
+    Copyright 2008 Adobe Systems Incorporated
+    All Rights Reserved.
+
+    NOTICE: Adobe permits you to use, modify, and distribute this file
+    in accordance with the terms of the license agreement accompanying it.
+
+-->
+
+<!--- The default skin class for the Spark Button component.  
+
+       @see spark.components.Button
+        
+      @langversion 3.0
+      @playerversion Flash 10
+      @playerversion AIR 1.5
+      @productversion Flex 4
+-->
+<s:SparkButtonSkin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+             xmlns:s="library://ns.adobe.com/flex/spark" 
+             xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+             minWidth="21" minHeight="21" 
+             alpha.disabled="0.5">
+     
+	<!-- states -->
+	<s:states>
+		<s:State name="up" />
+		<s:State name="over" />
+		<s:State name="down" />
+		<s:State name="disabled" />
+	</s:states>
+	
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("spark.components.Button")]
+	</fx:Metadata>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/halo";
+		
+		@font-face {
+			src: url("Gotham-Book.ttf");
+			fontFamily: "Gotham";
+			embedAsCFF: true;
+		}
+		
+		@font-face {
+			src: url("skins/Gotham-Bold.ttf");
+			fontFamily: "GothamBold";
+			embedAsCFF: true;
+		}
+		
+		
+		.answerText {
+			fontFamily: Gotham;
+			fontSize:24;
+			color: #cecece;
+			labelPosition:inside;
+			labelAlign:top;
+		}
+		
+		.answerTextBig {
+			fontFamily: GothamBold;
+			fontSize:60;
+			color: #333;
+		}
+		
+	</fx:Style>  
+	<fx:Script fb:purpose="styling">
+		<![CDATA[
+			
+			[Bindable]
+			private var _answerLabel:String;
+			
+			static private const exclusions:Array = ["labelDisplay"];
+			
+			override public function get colorizeExclusions():Array {
+				return exclusions;
+			}
+			
+			override protected function initializationComplete():void {
+				useChromeColor = true;
+				super.initializationComplete();
+			}
+			public function set answerLabel(val:String):void {
+				_answerLabel = val;
+			}
+			public function get answerLabel():String {
+				return _answerLabel;
+			}
+		]]>
+	</fx:Script>
+	
+	<s:BitmapImage source="@Embed('assets/pollBtn_up.png')"
+				   source.down="@Embed('assets/pollBtn_up.png')"
+				   source.disabled="@Embed('assets/pollBtn_up.png')"
+				   left="0" right="0" top="0" bottom="0" />
+	
+	<!-- layer 8: text -->
+
+	<s:Label id="labelDisplay"
+			 textAlign="left"
+			 verticalAlign="middle"
+			 maxDisplayedLines="2"
+			 horizontalCenter="0" verticalCenter="1"  width="400" height="60"
+			 left="140" right="10" top="2" bottom="2" styleName="answerText">
+		<s:filters>
+			<s:DropShadowFilter distance="1" blurX="0" blurY="0" color="#000000" alpha=".4" angle="270"/>
+		</s:filters>
+		</s:Label>
+	
+
+    
+</s:SparkButtonSkin>

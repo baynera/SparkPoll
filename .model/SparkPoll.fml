@@ -1,0 +1,286 @@
+
+<model xmlns="http://ns.adobe.com/Fiber/1.0">
+  <annotation name="ActionScriptGeneration">
+    <item name="FullyQualifyReferences">true</item>
+  </annotation>
+  <service name="SimplePollQuestionServiceDestination">
+    <annotation name="ActionScriptGeneration">
+      <item name="ServiceType">RemoteObject</item>
+      <item name="Package">services</item>
+      <item name="Destination">SimplePollQuestionServiceDestination</item>
+    </annotation>
+    <annotation name="ServiceConfig">
+      <item name="DEFAULT_ENTITY_PACKAGE">valueObjects</item>
+      <item name="contextRoot">/MySQLWebProject</item>
+      <item name="rootUrl">http://10.106.77.76:8080/MySQLWebProject</item>
+      <item name="LINKED_FILE"></item>
+      <item name="ABSOLUTE_ENDPOINT">http://10.106.77.76:8080/MySQLWebProject/messagebroker/amf</item>
+    </annotation>
+    <annotation name="ServiceTypeGroup">
+      <item name="ServiceBackendType">BlazeDS</item>
+    </annotation>
+    <function name="getUnpublishedPollQuestions" return-type="SimplePollQuestion[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer</item>
+        <item name="returnType">SimplePollQuestion</item>
+      </annotation>
+      <parameter name="arg0" type="integer"/>
+    </function>
+    <function name="getPollQuestions" return-type="SimplePollQuestion[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer</item>
+        <item name="returnType">SimplePollQuestion</item>
+      </annotation>
+      <parameter name="arg0" type="integer"/>
+    </function>
+    <function name="deleteUserQuestions" return-type="integer">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">integer</item>
+      </annotation>
+    </function>
+    <function name="cleanupPollAnswers" return-type="integer">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">integer</item>
+      </annotation>
+    </function>
+    <function name="submitPollQuestions" return-type="string">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer,integer,string</item>
+        <item name="returnType">string</item>
+      </annotation>
+      <parameter name="arg0" type="integer"/>
+      <parameter name="arg1" type="integer"/>
+      <parameter name="arg2" type="string"/>
+    </function>
+    <function name="updatePollQuestions" return-type="string">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer</item>
+        <item name="returnType">string</item>
+      </annotation>
+      <parameter name="arg0" type="integer"/>
+    </function>
+    <function name="deletePollQuestions" return-type="integer">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer</item>
+        <item name="returnType">integer</item>
+      </annotation>
+      <parameter name="arg0" type="integer"/>
+    </function>
+  </service>
+  <entity name="SimplePollQuestion">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">SimplePollQuestion</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="RemoteClass">com.adobe.objects.SimplePollQuestion</item>
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">SimplePollQuestionServiceDestination</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <property name="pollPublished" type="string"/>
+    <property name="pollId" type="integer"/>
+    <property name="questionId" type="integer"/>
+    <property name="pollDate" type="string"/>
+    <property name="questionStr" type="string"/>
+  </entity>
+  <service name="SimplePollChoiceServiceDestination">
+    <annotation name="ActionScriptGeneration">
+      <item name="ServiceType">RemoteObject</item>
+      <item name="Package">services</item>
+      <item name="Destination">SimplePollChoiceServiceDestination</item>
+    </annotation>
+    <annotation name="ServiceConfig">
+      <item name="DEFAULT_ENTITY_PACKAGE">valueObjects</item>
+      <item name="contextRoot">/MySQLWebProject</item>
+      <item name="rootUrl">http://10.106.77.76:8080/MySQLWebProject</item>
+      <item name="ABSOLUTE_ENDPOINT">http://10.106.77.76:8080/MySQLWebProject/messagebroker/amf</item>
+    </annotation>
+    <annotation name="ServiceTypeGroup">
+      <item name="ServiceBackendType">BlazeDS</item>
+    </annotation>
+    <function name="getPollIds" return-type="SimplePollChoice[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">SimplePollChoice</item>
+      </annotation>
+    </function>
+  </service>
+  <entity name="SimplePollChoice">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">SimplePollChoice</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="RemoteClass">com.adobe.objects.SimplePollChoice</item>
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">SimplePollChoiceServiceDestination</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <property name="pollId" type="integer"/>
+  </entity>
+  <service name="SimplePollAnswersServiceDestination">
+    <annotation name="ActionScriptGeneration">
+      <item name="ServiceType">RemoteObject</item>
+      <item name="Package">services</item>
+      <item name="Destination">SimplePollAnswersServiceDestination</item>
+    </annotation>
+    <annotation name="ServiceConfig">
+      <item name="DEFAULT_ENTITY_PACKAGE">valueObjects</item>
+      <item name="contextRoot">/MySQLWebProject</item>
+      <item name="rootUrl">http://10.106.77.76:8080/MySQLWebProject</item>
+      <item name="ABSOLUTE_ENDPOINT">http://10.106.77.76:8080/MySQLWebProject/messagebroker/amf</item>
+    </annotation>
+    <annotation name="ServiceTypeGroup">
+      <item name="ServiceBackendType">BlazeDS</item>
+    </annotation>
+    <function name="getPollAnswers" return-type="SimplePollAnswer[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer</item>
+        <item name="returnType">SimplePollAnswer</item>
+      </annotation>
+      <parameter name="arg0" type="integer"/>
+    </function>
+    <function name="setPollAnswers" return-type="string">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer,string,string</item>
+        <item name="returnType">string</item>
+      </annotation>
+      <parameter name="arg0" type="integer"/>
+      <parameter name="arg1" type="string"/>
+      <parameter name="arg2" type="string"/>
+    </function>
+  </service>
+  <entity name="SimplePollAnswer">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">SimplePollAnswer</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="RemoteClass">com.adobe.objects.SimplePollAnswer</item>
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">SimplePollAnswersServiceDestination</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <property name="pollId" type="integer"/>
+    <property name="questionId" type="integer"/>
+    <property name="labelStr" type="string"/>
+    <property name="answerStr" type="string"/>
+    <property name="pollDate" type="date"/>
+  </entity>
+  <service name="SimplePollDataServiceDestination">
+    <annotation name="ActionScriptGeneration">
+      <item name="ServiceType">RemoteObject</item>
+      <item name="Package">services</item>
+      <item name="Destination">SimplePollDataServiceDestination</item>
+    </annotation>
+    <annotation name="ServiceConfig">
+      <item name="DEFAULT_ENTITY_PACKAGE">valueObjects</item>
+      <item name="contextRoot">/MySQLWebProject</item>
+      <item name="rootUrl">http://10.106.77.76:8080/MySQLWebProject</item>
+      <item name="ABSOLUTE_ENDPOINT">http://10.106.77.76:8080/MySQLWebProject/messagebroker/amf</item>
+    </annotation>
+    <annotation name="ServiceTypeGroup">
+      <item name="ServiceBackendType">BlazeDS</item>
+    </annotation>
+    <function name="getPollAnswers" return-type="SimplePollData[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">string,integer,integer</item>
+        <item name="returnType">SimplePollData</item>
+      </annotation>
+      <parameter name="arg0" type="string"/>
+      <parameter name="arg1" type="integer"/>
+      <parameter name="arg2" type="integer"/>
+    </function>
+    <function name="setPollAnswers" return-type="string">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">string,integer,integer,string,integer,integer</item>
+        <item name="returnType">string</item>
+      </annotation>
+      <parameter name="arg0" type="string"/>
+      <parameter name="arg1" type="integer"/>
+      <parameter name="arg2" type="integer"/>
+      <parameter name="arg3" type="string"/>
+      <parameter name="arg4" type="integer"/>
+      <parameter name="arg5" type="integer"/>
+    </function>
+    <function name="setPollTitle" return-type="string">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">string,string,string</item>
+        <item name="returnType">string</item>
+      </annotation>
+      <parameter name="arg0" type="string"/>
+      <parameter name="arg1" type="string"/>
+      <parameter name="arg2" type="string"/>
+    </function>
+  </service>
+  <entity name="SimplePollData">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">SimplePollData</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="RemoteClass">com.adobe.objects.SimplePollData</item>
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">SimplePollDataServiceDestination</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <property name="pctInt" type="integer"/>
+    <property name="pollId" type="integer"/>
+    <property name="questionId" type="integer"/>
+    <property name="labelStr" type="string"/>
+    <property name="pollDate" type="date"/>
+    <property name="visitId" type="string"/>
+    <property name="totalInt" type="integer"/>
+  </entity>
+</model>

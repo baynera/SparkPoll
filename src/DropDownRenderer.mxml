@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true">
+	
+	<fx:Script>
+		<![CDATA[
+			import events.GridEvent;
+			import mx.events.FlexEvent;
+			import mx.collections.ArrayCollection;
+			
+			
+			[Bindable]
+			public var templatesArray:ArrayCollection = new ArrayCollection(
+				[{label:"Agree/Disagree", value: "agree"}, 
+				{label:"Agree 5 point", value: "agreefivepoint"},
+				{label:"Yes/No", value: "yes"}, 
+				{label:"Scale", value: "scale"},
+				{label:"Number of times", value: "number"},
+				{label:"Open Ended", value: "open"}]);
+
+			
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				//lblData.text = data[column.dataField]
+			}
+			private function init(ev:FlexEvent):void
+			{
+				ev.currentTarget.selectedIndex = 0;
+			}
+		]]>
+	</fx:Script>
+
+	<s:DropDownList id="dgDropdown" top="9" left="7" change="dispatchEvent(new GridEvent(GridEvent.ON_DROP_DOWN))" dataProvider="{templatesArray}" />
+	<!--  creationComplete="init(event)" -->
+</s:GridItemRenderer>

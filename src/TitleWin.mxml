@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="594" height="554" backgroundColor="#FFFFFF" close="ttlWndw_close(event);">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		.myButtonClose { 
+			skinClass:ClassReference("skins.SmallerButton"); 
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import events.CustomEvent;
+			
+			import mx.charts.ChartItem;
+			import mx.charts.HitData;
+			import mx.charts.series.BarSeries;
+			import mx.charts.series.items.BarSeriesItem;
+			import mx.core.IFlexDisplayObject;
+			import mx.charts.chartClasses.IAxis;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			public function ttlWndw_close(evt:CloseEvent):void {
+				PopUpManager.removePopUp(evt.currentTarget as IFlexDisplayObject);
+			}
+			public function dtFunc(h:HitData):String {
+				return "<B>" + h.item.myPct+"%</B>";
+			}
+			private function setCustomLabel(item:ChartItem, series:BarSeries):String
+			{
+				
+				var data:BarSeriesItem = BarSeriesItem(item);
+				trace(data.item.myPct);
+
+				var currentSeries:BarSeries = BarSeries(series);
+				
+				return data.item.myPct + "% ("+ data.item[currentSeries.xField]+")";
+				
+			}
+			private function horizontalAxis_labelFunction(labelValue:Object, previousValue:Object, axis:IAxis):String
+			{
+				if (Number(labelValue) != int(labelValue))
+					return "";
+				else
+					return String(labelValue);
+			}
+		]]>
+	</fx:Script>
+	<mx:BarChart id="myChart" x="13" y="31" width="564" height="446"  showDataTips="true" fontSize="22" dataTipFunction="dtFunc">
+		<mx:verticalAxis>
+			<mx:CategoryAxis id="myCat" categoryField="label"   />
+		</mx:verticalAxis>
+
+		<mx:series>
+			<mx:BarSeries fills="[#61717D,#61717D,#61717D,#61717D,#61717D]" 
+						  yField="label"  
+						  xField="total"   
+						  displayName="Totals" styleName="totalSeries" barWidthRatio="1" labelFunction="setCustomLabel"  />
+		</mx:series>
+	</mx:BarChart>
+	<s:Label id="countTxt" right="2" top="8" width="58" height="17" color="#030303" fontSize="18"
+			 fontWeight="bold" text="0" textAlign="center" verticalAlign="top"/>
+	<s:Label id="respLbl" right="63" top="10" color="#0C0C0C" fontSize="11" text="Responses"/>
+	<s:HGroup id="ttlWndwBtns" y="483" x="165" horizontalAlign="center">
+		<s:Button id="closeBtn" height="30" label="Save Results"
+				  click="dispatchEvent(new CustomEvent(CustomEvent.ON_CLOSE_POP))" horizontalCenter="0" styleName="myButtonClose"/>
+		<s:Spacer width="5" />
+		<s:Button id="showBtn" height="30" label="Show Results"
+				  click="dispatchEvent(new CustomEvent(CustomEvent.ON_SHOW_RESULTS))" horizontalCenter="0" styleName="myButtonClose"/>
+	</s:HGroup>
+
+</s:TitleWindow>

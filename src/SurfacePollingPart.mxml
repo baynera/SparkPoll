@@ -1,0 +1,1070 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:services="services.*"
+			   backgroundColor="#3f403e" 
+			   creationComplete="fadeSplashShow.play();init(event)"
+			   currentState="start" exitState="doExit(event)"
+			   height.menu="688"
+			   width.questions="100%" height.questions="100%"
+			   width.start="1200" height.start="100%">
+
+	<s:states>
+		<s:State name="start"/>
+		<s:State name="questions"/>
+		<s:State name="menu"/>
+		<s:State name="title"/>
+		<s:State name="choosepoll"/>
+	</s:states>
+	
+	<fx:Declarations>
+		<s:Sequence id="fadeSplashHide" duration="2000" effectEnd="initializeRole();"
+					target="{splash}">
+			<s:Fade id="fadeHide" alphaFrom="1.0" alphaTo="0.0"/>
+			<s:Resize id="resizeHide" heightTo="0" widthTo="0"/>
+		</s:Sequence>        
+		
+		<s:Parallel id="fadeSplashShow" duration="2000" target="{splash}">
+			<s:Fade id="fadeShow" alphaFrom="0.0" alphaTo="1.0"/>
+		</s:Parallel>
+		
+		<s:Sequence id="fadeMenu" duration="2000" effectEnd="currentState='questions'" target="">
+			<s:Fade id="fadeMenuHide" alphaFrom="1.0" alphaTo="0.0"/>
+		</s:Sequence> 
+		
+		<s:Sequence id="fadeTitle" duration="2000" effectEnd="currentState='menu'" target="">
+			<s:Fade id="fadeTitleHide" alphaFrom="1.0" alphaTo="0.0"/>
+		</s:Sequence> 
+		
+		<s:CallResponder id="getPollAnswersResult"/>
+		<services:SimplePollDataServiceDestination id="simplePollDataServiceDestination"
+												   fault="showFault(event)"
+												   result="showDataResults(event)"
+												   showBusyCursor="true"/>
+		<services:SimplePollQuestionServiceDestination id="simplePollQuestionServiceDestination"
+													   fault="showFault(event)"
+													   result="showQuestionResults(event)"
+													   showBusyCursor="true"/>
+		<services:SimplePollAnswersServiceDestination id="simplePollAnswersServiceDestination"
+													  fault="showFault(event)"
+													  result="showAnswersResults(event)"
+													  showBusyCursor="true"/>
+		<services:SimplePollChoiceServiceDestination id="simplePollChoiceServiceDestination"
+													 fault="showFault(event)"
+													 result="showChoiceResults(event)"
+													 showBusyCursor="true"/>
+		<s:CallResponder id="getPollQuestionsResult"/>
+		
+	</fx:Declarations>
+		<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		@font-face {
+			src: url("skins/Gotham-Book.ttf");
+			fontFamily: "Gotham";
+			embedAsCFF: true;
+		}
+		
+		@font-face {
+			src: url("skins/Gotham-Bold.ttf");
+			fontFamily: "GothamBold";
+			embedAsCFF: true;
+		}
+		
+		s|TextArea {
+			backgroundAlpha: 0.0;
+			fontFamily: Gotham;
+			fontSize:26;
+			color: #cecece;
+			contentBackgroundColor:black;
+			contentBackgroundAlpha: 0.2;
+			paddingTop: 20;
+			paddingLeft: 20;
+		}
+		.title {
+			fontFamily: Gotham;
+			fontSize:22;
+			color: #6f6f6f;
+		}
+		.date {
+			fontFamily: Gotham;
+			fontSize:22;
+			color: red;
+		}
+		.myButtonStyle { 
+			skinClass:ClassReference("skins.AnswerButton"); 
+		}
+		.myButtonStyleA { 
+			skinClass:ClassReference("skins.AnswerButtonA"); 
+		}
+		.myButtonStyleB { 
+			skinClass:ClassReference("skins.AnswerButtonB"); 
+		}
+		.myButtonStyleC { 
+			skinClass:ClassReference("skins.AnswerButtonC"); 
+		}
+		.myButtonStyleD { 
+			skinClass:ClassReference("skins.AnswerButtonD"); 
+		}
+		.myButtonStyleE { 
+			skinClass:ClassReference("skins.AnswerButtonE"); 
+		}
+		.myButtonMenu{ 
+			skinClass:ClassReference("skins.MenuButton"); 
+		}
+		.myButtonReviewMenu{ 
+			skinClass:ClassReference("skins.MenuReviewButton"); 
+		}
+		.myButtonReview { 
+			skinClass:ClassReference("skins.SmallerButton"); 
+		}
+		.totalSeries {
+			fontSize:22;
+			fontWeight:bold;
+			labelPosition:inside;
+			labelAlign:center;
+			paddingTop: 20;
+		}
+		.labelText {
+			fontFamily: Gotham;
+			fontSize:24;
+			color: #cecece;
+			labelPosition:inside;
+			z-index: 22;
+		}
+		
+	</fx:Style>
+	
+	<fx:Metadata>
+		[Event(name="customClose", type="flash.events.Event")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.display.Loader;
+			import flash.events.Event;
+			import flash.events.HTTPStatusEvent;
+			import flash.events.IEventDispatcher;
+			import flash.events.IOErrorEvent;
+			import flash.events.MouseEvent;
+			import flash.events.NetStatusEvent;
+			import flash.events.ProgressEvent;
+			import flash.events.SecurityErrorEvent;
+			import flash.events.SyncEvent;
+			import flash.events.TimerEvent;
+			import flash.net.SharedObject;
+			import flash.net.URLLoader;
+			import flash.utils.getTimer;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.managers.PopUpManagerChildList;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			import spark.components.Button;
+			import spark.components.VGroup;
+			
+			import events.CustomEvent;
+			
+			import skins.AnswerButton;
+			
+			import utils.Red5Connection;
+			//import utils.StringHelper;
+			
+			//import vo.ResponseObject;
+			
+			
+			private var loader:URLLoader;
+			private var xmlDocToLoad:String;
+			private var currPoll:int = 1;
+			private var currQuestion:Number = 1;
+			private var answerCount:int;
+			private var so:SharedObject;
+			private var soTot:SharedObject;
+			private var soQ:SharedObject;
+			private var soP:SharedObject;
+			private var soIdx:SharedObject;
+			private var soRev:SharedObject;
+			protected var ttlWndw:TitleWin;
+			protected var askWndw:AskWin;
+			private var deviceName:String;
+			private var reviewResults:ArrayCollection;
+			private var pollId:int;
+			private var visitId:String;
+			private var skinFile:String;
+			
+			private var questionStr:String;
+			public var image_loader:Loader;
+			private var nuAnswer:int;
+			private var totQuestions:int;
+			private var reviewMode:String;
+			private var menuCreated:Boolean = false;
+			private var connected:Boolean = false;
+			private var timer:Timer;
+			
+			
+			private var totalAnswers:int = 0;
+			public var nc:Red5Connection;
+			private var revBtn:Button;
+			private var backBtn:Button;
+			private var askBtn:Button;
+			private var localSo:SharedObject;
+			private var currButton:Object;
+			private var testLabels:Array = ["A", "B", "C", "D", "E"];
+			private var btnStylesArray:Array = [".myButtonStyleA", ".myButtonStyleB", ".myButtonStyleC", ".myButtonStyleD", ".myButtonStyleE"];
+			private var answersTemplate:String;
+			
+			private var pollSync:Boolean;
+			private var participantTitle:String;
+			private var currQuestionIndex:Number;
+			private var useTextBool:String;
+			private var youAreLate:Boolean = false;
+			
+			
+			[Bindable]
+			private var externalXML:XML;
+			
+			[Bindable]
+			private var questionsArray:ArrayCollection = new ArrayCollection(); 
+			
+			[Bindable]
+			private var answersArray:ArrayCollection;
+			
+			[Bindable]
+			private var pollsArray:ArrayCollection;
+			
+			
+			
+			[Bindable]
+			private var myData:Array;
+			
+			[Bindable]
+			private var soArray:Array;
+			
+			[Bindable]
+			private var yourTitle:String;
+			
+			[Bindable]
+			private var titleDropEnabled:Boolean = true;
+			
+			[Bindable]
+			private var dropIndex:Number;
+			
+			[Bindable]
+			private var role:String = "";
+			
+			[Bindable]
+			private var myTitle:String;
+			
+			private var today_date:Date = new Date();
+			private var monthNames_array:Array = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+			
+			[Bindable]
+			private var date_str:String = (monthNames_array[today_date.getMonth()]+" "+today_date.getDate()+", "+today_date.getFullYear());
+			
+			
+			private var ip:String;
+			//private var ip:String = "10.106.77.84"; // Perceptive
+			
+			private function init(ev:FlexEvent):void 
+			{			
+				// init some vars
+				reviewMode = "false";
+				myData = new Array();
+				debugText.visible = true;	
+				
+				// local shared object
+				localSo = SharedObject.getLocal("ccmpolling");
+				if(localSo.data.pollResults == null) {
+					localSo.data.pollResults = new Array();
+				}	
+				
+				// NC connect/disconnect Timer
+				startTimer();
+				
+				// now hide splash screen
+				fadeSplashHide.play();	
+			}
+			
+			private function startTimer():void {
+				// every 60s
+				timer = new Timer(60000);
+				// handler at end of code
+				timer.addEventListener(TimerEvent.TIMER, onTimer);
+				timer.start();
+			}
+			
+			protected function initializeRole():void 
+			{
+				// Flashvars initialize vars
+				
+				visitId = FlexGlobals.topLevelApplication.parameters.visitId;
+				skinFile = FlexGlobals.topLevelApplication.parameters.skinFile;
+				ip = FlexGlobals.topLevelApplication.parameters.ipAddress;
+				myTitle = FlexGlobals.topLevelApplication.parameters.title;
+				useTextBool = FlexGlobals.topLevelApplication.parameters.useText;
+				
+				
+				// after Splash fade and role is determined...
+				
+				currentState = 'menu';
+				bgImage.source = "http://"+ip+":8080/MySQLWebProject/assets/"+skinFile;
+				
+				setUpNetConnection();
+				
+				
+			}
+			
+			private function loadQuestions(val:int):void 
+			{
+				// pass Poll id (9999 are the participant polls)
+				simplePollQuestionServiceDestination.getPollQuestions(val);		
+			}
+			
+			// listeners
+			private function configureListeners(dispatcher:IEventDispatcher):void {
+				dispatcher.addEventListener(Event.COMPLETE, completeHandler);
+				dispatcher.addEventListener(Event.OPEN, openHandler);
+				dispatcher.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+				dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
+				dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, httpStatusHandler);
+				dispatcher.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);			
+			}
+			
+			// set up MC
+			private function setUpNetConnection():void {
+				debug("set up connection");
+				// NetConnection Singleton
+				nc = new Red5Connection();
+				// we only own 60 tablets, cushion
+				nc.maxPeerConnections = 80;
+				nc.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
+				nc.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityNCErrorHandler);
+				
+				//
+				// rtmp uses 1935, so don't put in 5030 here. duh
+				nc.connect("rtmp://"+ip+"/SimplePoll");
+				nc.client = this;
+			}
+			// NetConnection handlers
+			private function netStatusHandler(event:NetStatusEvent):void 
+			{
+				if(nc.connected) {
+					debug("connected to Red5 " + nc.maxPeerConnections + " uri: " + nc.uri);
+					connected = true;
+					// Shared object stuff
+					
+					soTot = SharedObject.getRemote("total", nc.uri, false);
+					so = SharedObject.getRemote("message", nc.uri, false);
+					soQ = SharedObject.getRemote("currentQuestion", nc.uri, false);
+					soP = SharedObject.getRemote("currentPoll", nc.uri, false);
+					soIdx = SharedObject.getRemote("currentIndex", nc.uri, false);
+					soRev = SharedObject.getRemote("reviewMode", nc.uri, false);
+					
+					so.addEventListener(SyncEvent.SYNC,onSync);
+					soTot.addEventListener(SyncEvent.SYNC,onSync);
+					soQ.addEventListener(SyncEvent.SYNC,onQuestionSync);
+					soP.addEventListener(SyncEvent.SYNC, onPollSync);
+					soIdx.addEventListener(SyncEvent.SYNC, onIndexSync);
+					soRev.addEventListener(SyncEvent.SYNC, onReviewSync);
+					
+					so.client = this;
+					so.connect(nc);
+					soTot.client = this;
+					soTot.connect(nc);
+					soQ.client = this;
+					soQ.connect(nc);
+					soP.client = this;
+					soP.connect(nc);
+					soIdx.client = this;
+					soIdx.connect(nc);
+					soRev.client = this;
+					soRev.connect(nc);
+					
+					handleNCState();
+				} else {
+					debug("Could not connect to media server.");
+					connected = false;
+				}					
+			}
+			
+			// Handle NetConnection state
+			private function handleNCState():void 
+			{	
+				// stop "double" menus from being created				
+				if(menuCreated == false) {
+					createMenu();
+				}
+				
+			}
+			
+			private function securityNCErrorHandler(event:SecurityErrorEvent):void 
+			{
+				debug("NO RED 5");
+			}
+			
+			// load XML and show CCM logo, fade it
+			private function completeHandler(event:Event):void {
+				
+			}
+			
+			// create menu buttons
+			private function createMenu():void 
+			{	
+				//Alert.show("create the menu dude");
+				
+				currentState = 'menu';
+				
+				totQuestions = questionsArray.length;
+				menuGroup.removeAllElements();
+				menuGroup.horizontalCenter = true;
+				menuGroup.width = 1121;
+				menuGroup.height = 265;
+				menuGroup.maxWidth = 1121;
+				menuGroup.x = 81;
+				menuGroup.y = 264;
+				
+				
+				for(var i:int = 1; i <= totQuestions; i++) {
+					var strQuest:String = String(questionsArray[i-1].questionId);
+					var menuBtn:Button = new Button();
+					if(currPoll < 9999) {
+						menuBtn.label = "Event " + i;
+					} else {
+						menuBtn.label = "Live " + i;
+					}
+					menuBtn.id = String(i);
+					menuBtn.width = 160;
+					menuBtn.height = 40;
+					menuBtn.addEventListener(MouseEvent.CLICK, onMenuButtonClick);
+					// question name/id exisits in local shared object
+					if(localSo.data.pollResults["question"+strQuest]) {
+						menuBtn.styleName = "myButtonReviewMenu";	
+					} else {
+						menuBtn.styleName = "myButtonMenu";	
+					}
+					
+					menuGroup.addElement(menuBtn);					
+					addElement(menuGroup);
+					menuCreated = true;
+				}
+				
+				// add 'Ask a Question' Button
+				
+				try {
+					askGroup.removeAllElements();
+				}
+				catch(err:Error) {
+					
+				}
+				finally {
+					askBtn = new Button();
+					askBtn.label = "SUBMIT A QUESTION/COMMENT";
+					askBtn.styleName = "myButtonReview";
+					askBtn.id = "askBtn";
+					askBtn.width = 260;
+					askBtn.height = 40;
+					askBtn.addEventListener(MouseEvent.CLICK, onAsk);
+					askGroup.addElement(askBtn);
+					menuGroup.enabled = false; // this was below bracket
+				}
+				
+				// hide dynamic title/date in Menu
+				if(useTextBool == "false") {
+					date.text = "";
+					title.text = "";
+				}	
+				youAreLate = false;
+				// this is BOOKMARKING, but it breaks normal functionality...
+				if(currQuestionIndex < 0) {
+					//menuGroup.visible = false;
+					//setUpAnswers();
+				}
+			}
+			
+			public function readAnswers(val:String, src:String):void 
+			{
+				debug2("READ ANSWERS " + val + " SRC:" + src);
+				currQuestion = int(val);
+				simplePollAnswersServiceDestination.getPollAnswers(currQuestion);
+			}
+			
+			/*
+			This creates answers as well as sets up btnBox to hold review and back btns
+			*/
+			public function setUpAnswers():void 
+			{								
+				debug("setup answers");
+				try {
+					questionStr = questionsArray[currQuestionIndex-1].questionStr;
+				}
+				catch(err:Error){
+					//Alert.show("No question str");
+				}
+				
+				//debug2("setUpAnswers for Poll: " + pollId + "Question: " + questionStr);
+				debug2("%%%%% " + currQuestion + " :::: " + currQuestionIndex);
+				youAreLate = true;
+				
+				// this will remove answers
+				try {
+					removeElement(btnBox);
+				}
+				catch(err:Error) {
+					//Alert.show(err.message);
+				}
+				
+				try {
+					fadeMenu.play();
+					menuGroup.visible = false;
+					answerCount = 0;
+					btnBox = new VGroup();
+					btnBox.width = 1000;
+					btnBox.height = 500;
+					btnBox.x = 55;
+					btnBox.y = 30;
+					var tempQuest:TextArea = new TextArea();
+					tempQuest.left = 53;
+					tempQuest. top = 0;
+					tempQuest.width = 1065;
+					tempQuest.height = 155;
+					tempQuest.selectable = false;
+					tempQuest.editable = false;
+					tempQuest.enabled = true;
+					tempQuest.text = questionStr;
+					btnBox.addElement(tempQuest);
+					
+					for(var j:int = 0; j < answersArray.length; j++) {
+						var tempBtn:Button = new Button();
+						tempBtn.x = 100;
+						tempBtn.styleName = "myButtonStyle"+answersArray[j].labelStr;
+						tempBtn.label = answersArray[j].answerStr;
+						tempBtn.addEventListener(MouseEvent.CLICK, doPoll);
+						tempBtn.id = answersArray[j].labelStr;
+						btnBox.addElement(tempBtn);		
+						answerCount++;
+						totalAnswers++;
+					}	
+					
+					addElement(btnBox);
+					btnBox.enabled = true;
+					/*
+					#######################################################################
+					#######################################################################
+					#######################################################################*/
+					if(reviewMode == "true") {
+						btnBox.enabled = false;
+					} else {
+						btnBox.enabled = true;
+					}
+			
+				}
+				catch(err:Error) {
+					//Alert.show(err.message);
+				}
+				
+				// check for existing data
+				reviewPoll();
+				
+			}
+			
+			// BACK BUTTON
+			
+			
+			private function openHandler(event:Event):void {
+				trace("openHandler: " + event);
+			}
+			
+			private function progressHandler(event:ProgressEvent):void {
+				trace("progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+			}
+			
+			private function securityErrorHandler(event:SecurityErrorEvent):void {
+				trace("securityErrorHandler: " + event);
+			}
+			
+			private function httpStatusHandler(event:HTTPStatusEvent):void {
+				trace("httpStatusHandler: " + event);
+			}
+			
+			private function ioErrorHandler(event:IOErrorEvent):void {
+				trace("ioErrorHandler: " + event);
+			}
+			
+			// do Poll
+			private function doPoll(ev:MouseEvent):void 
+			{
+				debug("******* " + ev.currentTarget.id);
+				//nuAnswer =  getAnswerInt(ev.currentTarget.id);
+				debug("doPoll: Answer> " + nuAnswer);
+				ev.target.enabled = false;
+				btnBox.enabled = false;	
+				nc.call("sendTotals", null, ev.currentTarget.id, "1");	
+			}
+			
+			public function receiveTotal(a:String, b:String):void
+			{
+				// do nothing in participant
+			}
+			// Receive message from server response from 'nextQuestion' call
+			public function getNextMessage(msg:String):void
+			{	
+				
+				//outputTf.text = outputTf.text + "\ngetNextMessage RECEIVED!!";
+				try {
+					currQuestion++;
+					
+					removeElement(btnBox);
+					//readXML(currQuestion as String);	
+					readAnswers(currQuestion as String, "getNextMessage");
+				}
+				catch (err:Error) {
+					Alert.show(err.message, "getNextMessage");
+				}
+			}
+			
+			private function onMenuButtonClick(ev:MouseEvent):void 
+			{
+				// set current question to id of button
+				// ev.currentTarget.id is a String, currQuestion is a Number
+				currQuestion = Number(ev.currentTarget.id);
+				
+				debug("menuClick: " + ev.currentTarget.id);		
+				
+				var newVal:String = String(questionsArray[currQuestion-1].questionId);
+				nc.call("updateQuestion", null, newVal);
+				
+				currButton = ev.currentTarget;
+				nc.call("updateIndex", null, ev.currentTarget.id);		
+				
+				currQuestionIndex = Number(ev.currentTarget.id);
+				debug2("currQuestionIndex " + currQuestionIndex);
+				
+				// broadcast a message with that button number
+				nc.call("sendMessage", null, currQuestion);
+				
+			}
+			
+			// Receive from server, sent from presenter
+			public function receiveMessage(val:String):void 
+			{
+				//Alert.show("RECEIVE: " + val);
+				debug("RECEIVE MSG: " + val);
+				switch(val) {
+					case "QUIT":
+						cleanupSO();
+						break;
+					case "menu":
+						handleMenuState();
+						break;
+					case "push":
+						//handleMenuState();
+						break;
+					case "back":
+						handleBack();
+						break;
+					case "refresh":
+						debug("POLL >>>> " + currPoll);
+						var intPoll:int = int(soP.data.currPoll);
+						currPoll = soP.data.currPoll;
+						debug("POLL >>>> " + currPoll);
+						loadQuestions(intPoll);
+						break;
+					case "disable":
+
+						break;
+					case "userPush":
+						
+						break;
+					case "pageRefresh":
+						ExternalInterface.call("pageRefresh");
+						break;
+					default:
+						
+						break;
+					
+				}
+				// check if value received is a numeric
+				var testFlag:Boolean = isNaN( Number( val ) );
+				
+				if(testFlag == false) {
+		
+					// get the question right, here...
+					var newVal:String = String(questionsArray[int(val)-1].questionId);
+					
+					// broadcast an update current question
+					nc.call("updateQuestion", null, newVal);
+				}
+			}
+			
+			private function goBack(ev:MouseEvent):void 
+			{
+				nc.call("sendMessage", null, "back");
+			}
+			
+			private function onSync(ev:SyncEvent):void 
+			{
+				// SO sync event, triggered at app start
+				debug("onSync..."+ currPoll + " " + currQuestion);
+			}
+			
+			private function onQuestionSync(e:SyncEvent):void 
+			{
+				// SO sync event, triggered at app start
+				for (var i:String in e.changeList)
+				{
+					debug("Server Message: " + e.changeList[i].code)
+					debug("Server Message: " + e.changeList[i].name)
+				}
+				if(soQ.data.currentQuest != undefined) {
+					debug("SYNC " + soQ.data.currentQuest);				
+					readAnswers(soQ.data.currentQuest, "onQustionSync");
+					// set local var to RSO (needed?)
+					currQuestion = soQ.data.currentQuest;
+				}				
+			}
+			
+			private function onPollSync(e:SyncEvent):void {		
+				try {
+					var intPoll:int = int(soP.data.currPoll);
+					// set local to RSO
+					currPoll = soP.data.currPoll;
+					debug("POLL >>>> " + currPoll);
+					youAreLate = false;
+					loadQuestions(intPoll);
+				}
+				catch(err:Error) {
+					debug("Poll sync cannot loadQuestions");
+				}				
+			}
+			
+			public function onIndexSync(e:SyncEvent):void {
+				var intIndex:int = int(soIdx.data.currIndex);
+				currQuestionIndex = Number(soIdx.data.currIndex);
+				debug3("IDX: " + currQuestionIndex);
+				//readAnswers(String(currQuestionIndex), "onIndexSync");
+			}
+			public function onReviewSync(e:SyncEvent):void {
+				// using a SO sync to track reviewMode--seems more reliable
+				reviewMode = soRev.data.revMode;
+				//Alert.show("SO REV: " + reviewMode);
+				debug("onReviewSync " + reviewMode);
+				try {
+					if(reviewMode == "true") {
+						btnBox.enabled = false;
+					} else {
+						btnBox.enabled = true;
+					}
+					
+				}
+				catch(err:Error) {}
+			}
+			// need these for NC, not used
+			public function onBWDone(... rest) : void {
+				// have to have this for an RTMP connection
+				trace('onBWDone');
+			}
+			
+			public function onBWCheck(... rest) : uint {
+				trace('onBWCheck');
+				//have to return something, so returning anything :)
+				return 0;
+			} 
+			
+			
+			private function reviewPoll():void 
+			{
+				//debug2("reviewPoll Q: " + currQuestion + " P: " + pollId);
+				simplePollDataServiceDestination.getPollAnswers(visitId, int(pollId), int(currQuestion));				
+			}
+			
+			// there ARE results so show "Review Button"
+			private function showDataResults(ev:ResultEvent):void 
+			{	
+				debug("SHOW RESULTS ");
+				
+			}
+			
+			// show fault
+			private function showFault(ev:FaultEvent):void 
+			{
+				debug("showFault: " + ev.fault.faultString);
+			}
+			// QuestionsService Result
+			private function showQuestionResults(ev:ResultEvent):void 
+			{
+				debug("QUESTIONS LOADED");
+				try {
+					questionsArray = ev.result as ArrayCollection;	
+					
+					// make sure text input is not null
+					if((questionsArray[0].questionStr != null) && (youAreLate == false)){
+						createMenu();
+					} else {
+						//Alert.show("I said you are late");
+						menuCreated = false;
+						createMenu();
+						setUpAnswers();
+						
+					}
+				} 
+				catch(err:Error) {
+					debug("ERROR : " + err.message + " "+ err.name);
+				}
+				finally {
+					//questionsArray = null;
+				}
+				
+			}
+			// AnswersService Result
+			private function showAnswersResults(ev:ResultEvent):void 
+			{
+				
+				try{
+					
+					debug2("showAnswersResults ");
+					//Alert.show(ev.result as String);
+					answersArray = ev.result as ArrayCollection;
+					setUpAnswers();
+					
+				}
+				catch(err:Error) {
+					//Alert.show(err.message);
+				}
+				
+				
+			}
+			// PollChoiceService Result
+			private function showChoiceResults(ev:ResultEvent):void 
+			{
+				debug("showChoiceResults");
+				pollsArray = null;
+				var tempAC:ArrayCollection = ev.result as ArrayCollection;
+				pollsArray = deleteDupes(tempAC);	
+				pollsArray = makeCollectionFriendly(pollsArray);
+			}
+			
+			private function deleteDupes(ac:ArrayCollection):ArrayCollection {
+				for(var i:int=0; i<ac.length; i++)
+				{
+					for(var j:int = (i+1); j <ac.length; j++)
+					{
+						if(ac[i].pollId==ac[j].pollId)
+						{
+							ac.removeItemAt(j);
+							j-=1;
+						} 
+					}
+				}
+				
+				return ac;
+			}
+			
+			private function makeCollectionFriendly(ac:ArrayCollection):ArrayCollection {
+				var friendlyAC:ArrayCollection = new ArrayCollection();
+				for(var i:int=0; i<ac.length; i++)
+				{
+					if(ac[i].pollId == "9999") {
+						friendlyAC.addItem({label:"Event Questions", data:"9999"});
+					} else {
+						friendlyAC.addItem({label:"Live Questions "+(i+1), data:ac[i].pollId});
+					}
+				}
+				return friendlyAC;
+			}
+			
+			// close window, save SO, save data to db
+			public function doClose(ev:Event):void 
+			{
+				nc.call("sendMessage", null, "menu");
+				
+				// mark as "answered" via style. Also, done in "createMenu()" method
+				currButton.styleName = "myButtonReviewMenu";	
+			}
+			
+			// handle menu
+			private function handleMenuState():void 
+			{				
+				try {
+					btnBox.removeAllElements();
+					removeElement(btnBox);
+					nc.call("updateQuestion", null, undefined);
+					menuGroup.visible = true;
+				}
+				catch(err:Error) {
+					debug("Error handle menu state P: " + err.message);
+				}
+				// go to 'menu' state
+				currentState = 'menu';
+				
+				//reviewMode = "false";
+			}
+			
+			// handle menu
+			private function handleBack():void 
+			{
+				handleMenuState();			
+			}
+			
+			// exit Btn 
+			private function doExit(ev:Event):void 
+			{
+				
+			}
+			
+			// debug convenience
+			private function debug(val:String):void 
+			{
+				// output window (if visible)
+				debugText.text += "\n>>"+  val;
+			}
+			// debug convenience
+			private function debug2(val:String):void 
+			{
+				// output window (if visible)
+				debugText.text += "\n>>"+  val;
+			}
+			private function debug3(val:String):void 
+			{
+				// output window (if visible)
+				debugText.text += "\n>>"+  val;
+			}
+
+			// clean up Shared Ojects
+			private function cleanupSO():void 
+			{
+				debug("cleanUpSO");
+				nc.call("clearSO", null, null);
+				soQ.close();
+				so.close();
+				soTot.close();
+				soP.close();
+				soIdx.close();
+				soRev.close();
+			}
+			
+			// Timer handler every 60s; keep connected to Red5
+			private function onTimer(evt:TimerEvent):void {
+				try {
+					if (nc.connected == false) {
+						connected = false;
+						setUpNetConnection();
+					} else {
+						debug("NetConn: " + nc.connected.toString());
+					}
+				}
+				catch(err:Error) {}
+			}
+			
+			// Ask a question pop up
+			private function onAsk(ev:MouseEvent):void 
+			{
+				askWndw = PopUpManager.createPopUp(this, AskWin, false, PopUpManagerChildList.PARENT) as AskWin;
+				askWndw.alpha = 1.0;	
+				// center or put to right?
+				PopUpManager.centerPopUp(askWndw);
+				// submit Button
+				askWndw.submitBtn.label = "Submit Question";
+				askWndw.addEventListener(CustomEvent.ON_SUBMIT_POP, doSubmit);
+				// close Button
+				askWndw.cancelBtn.label = "Cancel";
+				askWndw.addEventListener(CustomEvent.ON_CANCEL_POP, doCancel);
+			}
+			
+			// submit button handler
+			public function doSubmit(ev:CustomEvent):void 
+			{			
+				// so instead, just close window
+				PopUpManager.removePopUp(askWndw);
+				
+				// create a random question id
+				var randNum:int = int(Math.random()*100000);
+				
+				// submit a poll question
+				simplePollQuestionServiceDestination.submitPollQuestions(randNum, 9999, askWndw.askText.text);
+				
+			}
+			
+			// Cancel button handler
+			public function doCancel(ev:CustomEvent):void 
+			{
+				try {
+					PopUpManager.removePopUp(askWndw);
+					removeElement(askBtn);
+				}
+				catch(err:Error) {}			
+			}
+			
+			public function trackEvent(ev:FlexEvent):void
+			{
+				//debugText.text += (ev.type + " event occured at " + flash.utils.getTimer() + "ms" + "\n");
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout.questions>
+		<s:BasicLayout/>
+	</s:layout.questions>
+	<s:layout.start>
+		<s:BasicLayout/>
+	</s:layout.start>
+	
+	
+	<!--<s:TextArea id="questionTxt" includeIn="questions" left="53" top="51" width="1065" height="155"
+				editable="false" enabled="true" selectable="false"/>-->
+	<s:Image includeIn="questions" left="15" top="30" alpha="0.3" backgroundAlpha="1.0" smooth="true"
+			 source="@Embed('assets/q.png')"/>
+	<s:Image includeIn="questions" bottom="12" horizontalCenter="19" smooth="true"
+			 source="@Embed('assets/touch.png')"/>
+	<s:Image includeIn="questions" right="49" bottom="43" smooth="true"
+			 source="@Embed('assets/ccmSm.png')"/>
+	<s:Image id="splash" includeIn="start" horizontalCenter="0" smooth="true"
+			 source="@Embed('assets/splashScreen.png')" verticalCenter="-30"/>
+	
+	<s:TextArea id="outputTf" includeIn="menu,questions,start,title" visible="false" x="1074" y="20"
+				width="301" height="264" color="#10EBB5" contentBackgroundColor="#181E1B"
+				fontFamily="Arial" fontSize="11"
+				x.menu="1101" y.menu="34" width.menu="183" height.menu="535"
+				contentBackgroundAlpha.menu="0.79"
+				x.questions="1116" y.questions="30" width.questions="214" height.questions="413"
+				contentBackgroundAlpha.questions="0.8"/>
+	<s:VGroup id="btnBox" includeIn="questions" x="53" y="214" width="1247" height="390">
+	</s:VGroup>
+	
+	<s:SWFLoader id="bgImage" includeIn="menu,title" x="0" y="0"/>
+	
+	<s:Group id="menuGroup" includeIn="menu" x="42" y="287" width="1021" height="262">
+		<s:layout>
+			<s:TileLayout horizontalAlign="center" horizontalGap="14" paddingTop="50"
+						  requestedColumnCount="6" verticalAlign="middle" verticalGap="14"/>
+		</s:layout>
+	</s:Group>
+	
+	<s:Group id="askGroup" includeIn="menu" x="42" y="550" width="1021" height="80">
+		<s:layout>
+			<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+		</s:layout>
+	</s:Group>
+	
+	<s:Label id="date" includeIn="menu" x="50" y="180" width="600" color="red" fontFamily="Gotham"
+			 fontSize="22" text="{date_str}"/>
+	<s:Label id="title" includeIn="menu" x="50" y="210" width="600" color="#6e6e6e"
+			 fontFamily="Gotham" fontSize="24" text="{myTitle}"/>
+	
+	
+	
+	<s:TextArea id="debugText" includeIn="start, menu, questions" x="1300" y="10" width="350"
+				height="600" color="0x8fe613" contentBackgroundAlpha="0.8"
+				contentBackgroundColor="0x000000" fontSize="11" includeInLayout="true"/>
+	
+	
+</s:Application>

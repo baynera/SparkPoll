@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexProperties enableServiceManager="false" flexServerFeatures="4" flexServerType="2" fmlDataModelLocation=".model/SparkPoll.fml" serverContextRoot="/MySQLWebProject" serverRoot="C:/Program Files/Apache Software Foundation/Tomcat 7.0/webapps/MySQLWebProject" serverRootURL="http://10.106.77.76:8080/MySQLWebProject" toolCompile="true" useServerFlexSDK="false" version="2"/>
